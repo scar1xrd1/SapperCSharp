@@ -28,8 +28,10 @@ interface ISapper
 class Dot
 {
     public int Type { get; set; } // -2(#) - флаг / -1(*) - мина / 0(.) - пустая клетка / 123456789 цифры
+    public bool IsFlag{ get; set; } 
     public bool Show { get; set; }
     public bool Checked { get; set; }
+    public void ChangeFlag() { IsFlag = !IsFlag; }
     public Dot() { Type = 0; Checked = false; }
 }
 
@@ -78,16 +80,16 @@ class Sapper : ISapper
 
             PrintField();
             Console.WriteLine($"Осталось мин: {mines - flags}\n");
-            Console.WriteLine("Управление:\nСтрелочки на клавиатуре - двигать курсор\nENTER - Поставить флаг\nSPACE - Вскрыть клетку\nBACKSPACE - Убрать флаг"); ;
+            Console.WriteLine("Управление:\nСтрелочки на клавиатуре - двигать курсор\nENTER - Поставить флаг (чтобы убрать, нажмите ENTER ещё раз)\nSPACE - Вскрыть клетку");
 
             ConsoleKeyInfo ch = Console.ReadKey(true);
             int code = ch.GetHashCode();
 
-            if (Key(code) == "right") { if (mousePTR[1] < x-1) mousePTR[1]++; Console.Beep(200, 100); }
+            if (Key(code) == "right") { if (mousePTR[1] < x - 1) mousePTR[1]++; Console.Beep(200, 100); }
             else if (Key(code) == "left") { if (mousePTR[1] > 0) mousePTR[1]--; Console.Beep(250, 100); }
             else if (Key(code) == "up") { if (mousePTR[0] > 0) mousePTR[0]--; Console.Beep(300, 100); }
-            else if (Key(code) == "down") { if (mousePTR[0] < y-1) mousePTR[0]++; Console.Beep(350, 100); }
-            else if(Key(code) == "space")
+            else if (Key(code) == "down") { if (mousePTR[0] < y - 1) mousePTR[0]++; Console.Beep(350, 100); }
+            else if (Key(code) == "space")
             {
                 if (field[mousePTR[0], mousePTR[1]].Type == -1)
                 {
@@ -110,6 +112,10 @@ class Sapper : ISapper
                     Console.Beep(850, 50);
                     CheckEmptyCells(mousePTR[0], mousePTR[1], false);
                 }
+            }
+            else if (Key(code) == "enter") 
+            {
+                
             }
             
             Console.Clear();
@@ -225,15 +231,6 @@ class Sapper : ISapper
                     else if (field[y, x].Type == 0) CheckEmptyCells(y - 1, x + 1, false);
                 }                
             }
-            //if (x - 1 > 0)
-            //{
-            //    if (field[y, x].Type > 0) return;
-            //    if (field[y, x - 1].Type >= 0 && !IsNum)
-            //    {
-            //        if(field[y, x].Type > 0) CheckEmptyCells(y, x - 1, true);
-            //        else if (field[y, x].Type == 0) CheckEmptyCells(y, x - 1, false);
-            //    }                
-            //}
         }
     }
 
@@ -291,9 +288,22 @@ class Sapper : ISapper
         {
             for (int j = 0; j < x; j++)
             {
-                if(i == mousePTR[0] && j == mousePTR[1]) { Console.BackgroundColor = ConsoleColor.DarkGreen; }
-                if (field[i, j].Show == true)
+                if (field[mousePTR[0], mousePTR[1]].Type >= 0 && field[mousePTR[0], mousePTR[1]].IsFlag) { field[mousePTR[0], mousePTR[1]].IsFlag = false; }
+
+                if (i == mousePTR[0] && j == mousePTR[1]) { Console.BackgroundColor = ConsoleColor.DarkGreen; }
+
+                if (field[i, j].IsFlag && !field[i, j].Show)
                 {
+                    if(i == mousePTR[0] && j == mousePTR[1]) { Console.BackgroundColor = ConsoleColor.DarkGreen; }
+                    else Console.BackgroundColor = ConsoleColor.White;
+                    Console.ForegroundColor = ConsoleColor.Black;
+                    Console.Write("#");
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                }
+                else if (field[i, j].Show)
+                {
+                    
                     if (field[i, j].Type == -1) Console.Write("*");
                     else if (field[i, j].Type == 0) Console.Write(".");
                     else
