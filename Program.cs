@@ -1,9 +1,11 @@
 ﻿// Сапёр
+using System.Reflection.Emit;
+
 Random rnd = new Random();
 int x = rnd.Next(5, 16), y = rnd.Next(5, 16);
 Sapper game = new Sapper(y, x);
 
-game.PrintField();
+game.Start();
 
 //while(true)
 //{
@@ -16,6 +18,7 @@ interface ISapper
 {
     void GenerateMines(int quantity);
     void GenerateNums();
+    //void InputHandler(string key);
 
     void PrintField();
     int CheckBox(int x, int y);
@@ -55,6 +58,53 @@ class Sapper : ISapper
 
         GenerateNums();
     }
+
+    public void Start()
+    {
+        while(true)
+        {
+            PrintField();
+            Console.WriteLine($"Осталось мин: {mines - flags}\n");
+            Console.WriteLine("Управление:\nСтрелочки на клавиатуре - двигать курсор\nENTER - Поставить флаг\nSPACE - Вскрыть клетку\nBACKSPACE - Убрать флаг"); ;
+
+            Console.WriteLine(y + " " + x);
+            Console.WriteLine(mousePTR[0] + " " + mousePTR[1]);
+
+            ConsoleKeyInfo ch = Console.ReadKey(true);
+            int code = ch.GetHashCode();
+
+            if (Key(code) == "right") { if (mousePTR[1] < x-1) mousePTR[1]++; }
+            else if (Key(code) == "left") { if (mousePTR[1] > 0) mousePTR[1]--; }
+            else if (Key(code) == "up") { if (mousePTR[0] > 0) mousePTR[0]--; }
+            else if (Key(code) == "down") { if (mousePTR[0] < y-1) mousePTR[0]++; }
+            Console.Clear();
+        }        
+    }
+
+    public string Key(int code)
+    {
+        if (code == 2490368) return "up";
+        else if (code == 2424832) return "left";
+        else if (code == 2621440) return "down";
+        else if (code == 2555904) return "right";
+
+        else if (code == 3211313) return "1";
+        else if (code == 3276850) return "2";
+        else if (code == 3342387) return "3";
+        else if (code == 3407924) return "4";
+        else if (code == 3473461) return "5";
+        else if (code == 3538998) return "6";
+        else if (code == 3604535) return "7";
+        else if (code == 3670072) return "8";
+        else if (code == 3735609) return "9";
+        else if (code == 3145776) return "0";
+
+        else if (code == 851981) return "enter";
+        else if (code == 2097184) return "space";
+        else if (code == 524296) return "backspace";
+
+        return "";
+    }   
 
     public int CheckBox(int x, int y)
     {
