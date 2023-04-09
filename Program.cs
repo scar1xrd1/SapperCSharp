@@ -33,6 +33,7 @@ class Sapper : ISapper
     Random rnd = new Random();
 
     int y, x, mines = 0, flags = 0;
+    int[] mousePTR = {0, 0};
     Dot[,] field; // i = y, j = x 
 
     public Sapper(int y, int x)
@@ -47,10 +48,10 @@ class Sapper : ISapper
             for (int j = 0; j < x; j++)
                 field[i, j] = new Dot();
 
-        if(y*x > 50) GenerateMines(rnd.Next(9, 15));
-        if(y*x > 75) GenerateMines(rnd.Next(16, 25));
-        if (y * x > 150) GenerateMines(rnd.Next(26, 32));
-        else GenerateMines(rnd.Next(6, 16));
+        if(y*x > 50) GenerateMines(rnd.Next(7, 13));
+        if(y*x > 75) GenerateMines(rnd.Next(14, 23));
+        if (y * x > 150) GenerateMines(rnd.Next(24, 30));
+        else GenerateMines(rnd.Next(4, 14));
 
         GenerateNums();
     }
@@ -109,22 +110,29 @@ class Sapper : ISapper
         {
             for (int j = 0; j < x; j++)
             {
-                if (field[i, j].Type == -1) Console.Write("*");
-                else if (field[i, j].Type == 0) Console.Write(".");
-                else
-                {                    
-                    if (field[i, j].Type == 1) Console.ForegroundColor = ConsoleColor.Blue;
-                    else if (field[i, j].Type == 2) Console.ForegroundColor = ConsoleColor.Green;
-                    else if (field[i, j].Type == 3) Console.ForegroundColor = ConsoleColor.DarkRed;
-                    else if (field[i, j].Type == 4) Console.ForegroundColor = ConsoleColor.DarkBlue;
-                    else if (field[i, j].Type == 5) Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                    else if (field[i, j].Type == 6) Console.ForegroundColor = ConsoleColor.Cyan;
-                    else if (field[i, j].Type == 7) Console.ForegroundColor = ConsoleColor.DarkGray;
-                    else if (field[i, j].Type == 8) Console.ForegroundColor = ConsoleColor.White;
-                    
-                    Console.Write(field[i, j].Type);
-                    Console.ForegroundColor = ConsoleColor.Gray;
+                if(i == mousePTR[0] && j == mousePTR[1]) { Console.BackgroundColor = ConsoleColor.DarkGreen; }
+                if (field[i, j].Show == true)
+                {
+                    if (field[i, j].Type == -1) Console.Write("*");
+                    else if (field[i, j].Type == 0) Console.Write(".");
+                    else
+                    {
+                        if (field[i, j].Type == 1) Console.ForegroundColor = ConsoleColor.Blue;
+                        else if (field[i, j].Type == 2) Console.ForegroundColor = ConsoleColor.Green;
+                        else if (field[i, j].Type == 3) Console.ForegroundColor = ConsoleColor.DarkRed;
+                        else if (field[i, j].Type == 4) Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        else if (field[i, j].Type == 5) Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                        else if (field[i, j].Type == 6) Console.ForegroundColor = ConsoleColor.Cyan;
+                        else if (field[i, j].Type == 7) Console.ForegroundColor = ConsoleColor.DarkGray;
+                        else if (field[i, j].Type == 8) Console.ForegroundColor = ConsoleColor.White;
+
+                        Console.Write(field[i, j].Type);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                    }
                 }
+                else Console.Write("O");
+
+                Console.BackgroundColor = ConsoleColor.Black;
                 Console.Write(" ");
             }
             Console.WriteLine();
