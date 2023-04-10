@@ -39,7 +39,7 @@ class Sapper : ISapper
 {
     Random rnd = new Random();
 
-    int y, x, mines = 0, flags = 0;
+    int y, x, mines = 0, flags = 0, cellsToOpen, openCells = 0;
     int[] mousePTR;
     Dot[,] field; // i = y, j = x 
 
@@ -72,6 +72,11 @@ class Sapper : ISapper
 
         while(true)
         {
+            if(win)
+            {
+                Console.WriteLine("Вы выиграли!");
+                break;
+            }
             if(lose)
             {
                 Console.WriteLine("Вы взорвались!!!");
@@ -79,7 +84,7 @@ class Sapper : ISapper
             }
 
             PrintField();
-            Console.WriteLine($"Осталось мин: {mines - flags}\n");
+            Console.WriteLine($"Осталось мин: {mines - flags}\nОсталось клеток: {cellsToOpen - openCells}\n");
             Console.WriteLine("Управление:\nСтрелочки на клавиатуре - двигать курсор\nENTER - Поставить флаг (чтобы убрать, нажмите ENTER ещё раз)\nSPACE - Вскрыть клетку");
 
             ConsoleKeyInfo ch = Console.ReadKey(true);
@@ -104,6 +109,7 @@ class Sapper : ISapper
                     Console.Beep(550, 50);
                     Console.Beep(650, 50);
                     field[mousePTR[0], mousePTR[1]].Show = true;
+                    openCells++;
                 }
                 else
                 {
@@ -117,7 +123,9 @@ class Sapper : ISapper
             {
                 
             }
-            
+
+            if (cellsToOpen - openCells == 0) win = true;
+
             Console.Clear();
         }        
     }
@@ -155,6 +163,7 @@ class Sapper : ISapper
         {
             field[y, x].Show = true;
             field[y, x].Checked = true;
+            openCells++;
 
             if (x + 1 < this.x)
             {
@@ -266,6 +275,7 @@ class Sapper : ISapper
     public void GenerateMines(int quantity)
     {
         mines = quantity;
+        cellsToOpen = x * y - mines;
         for (int i = 0; i < quantity; i++)
         {
             while(true)
