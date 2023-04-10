@@ -2,7 +2,7 @@
 using System.Reflection.Emit;
 
 Random rnd = new Random();
-int x = rnd.Next(5, 16), y = rnd.Next(5, 16);
+int x = rnd.Next(5, 24), y = rnd.Next(5, 21);
 Sapper game = new Sapper(y, x);
 
 game.Start();
@@ -39,9 +39,10 @@ class Sapper : ISapper
 {
     Random rnd = new Random();
 
-    bool lose, win;
-    int y, x, mines = 0, flags = 0, cellsToOpen, openCells = 0;
+    bool lose, win, stopThreads = false;
+    int y, x, mines = 0, flags = 0, cellsToOpen, openCells = 0, lenFlagsPos = 0, time = 0;
     int[] mousePTR;
+    int[,] flagsPos = new int[24, 2];
     Dot[,] field; // i = y, j = x 
 
     public Sapper(int y, int x)
@@ -50,7 +51,10 @@ class Sapper : ISapper
         this.y = y;
         this.x = x;
 
-        mousePTR = new int[2]{ y / 2, x / 2 };
+        Thread timer = new Thread(Timer);
+        timer.Start();
+
+        mousePTR = new int[2] { y / 2, x / 2 };
 
         field = new Dot[y, x];
 
@@ -58,37 +62,94 @@ class Sapper : ISapper
             for (int j = 0; j < x; j++)
                 field[i, j] = new Dot();
 
-        if(y*x > 50) GenerateMines(rnd.Next(7, 13));
-        else if(y*x > 75) GenerateMines(rnd.Next(10, 15));
+        if (y * x > 50) GenerateMines(rnd.Next(7, 13));
+        else if (y * x > 75) GenerateMines(rnd.Next(10, 15));
         else if (y * x > 150) GenerateMines(rnd.Next(15, 25));
         else GenerateMines(rnd.Next(4, 9));
 
         GenerateNums();
     }
 
+    public void Timer()
+    {
+        while(!stopThreads)
+        {
+            Thread.Sleep(1000);
+            time++;
+        }        
+    }
+
+    public void Restart(bool skipQuestion)
+    {
+        stopThreads = true;
+        string user = "";
+        if(!skipQuestion)
+        {
+            while (true)
+            {
+                Console.Write("Вы хотите начать заново?\n1. Да\n2. Нет\n-> ");
+                user = Console.ReadLine();
+                if (user == "1" || user == "2") { break; }
+            }
+        }
+        if(skipQuestion || user == "1")
+        {
+            stopThreads = false;
+            time = 0;
+            mines = 0;
+            flags = 0;
+            openCells = 0;
+            lenFlagsPos = 0;
+            x = rnd.Next(5, 21);
+            y = rnd.Next(5, 21);
+
+            mousePTR = new int[2] { y / 2, x / 2 };
+
+            field = new Dot[y, x];
+
+            for (int i = 0; i < y; i++)
+                for (int j = 0; j < x; j++)
+                    field[i, j] = new Dot();
+
+            if (y * x > 50) GenerateMines(rnd.Next(7, 13));
+            else if (y * x > 75) GenerateMines(rnd.Next(10, 15));
+            else if (y * x > 150) GenerateMines(rnd.Next(15, 25));
+            else GenerateMines(rnd.Next(4, 9));
+
+            GenerateNums();
+
+            Start();
+        }    
+    }
+
     public void Start()
     {
         lose = false;
-        win = false;
+        win = false;        
 
         while(true)
         {
-            CheckFlags();
-
             if(win)
             {
                 Console.WriteLine("Вы выиграли!");
+                Console.WriteLine($"Вы играли: {time}с");
+                stopThreads = true;
+                Restart(false);
                 break;
             }
             if(lose)
             {
                 Console.WriteLine("Вы взорвались!!!");
+                Console.WriteLine($"Вы играли: {time}с");
+                stopThreads = true;
+                Restart(false);
                 break;
             }
 
+            Console.WriteLine($"Прошло времени: {time}с");
             PrintField();
             Console.WriteLine($"Осталось мин: {mines - flags}\nОсталось клеток: {cellsToOpen - openCells}\n");
-            Console.WriteLine("Управление:\nСтрелочки на клавиатуре - двигать курсор\nENTER - Поставить флаг (чтобы убрать, нажмите ENTER ещё раз)\nSPACE - Вскрыть клетку");
+            Console.WriteLine("Управление:\nСтрелочки на клавиатуре - двигать курсор\nENTER - Поставить флаг (чтобы убрать, нажмите ENTER ещё раз)\nSPACE - Вскрыть клетку\nBACKSPACE - Рестарт");
 
             ConsoleKeyInfo ch = Console.ReadKey(true);
             int code = ch.GetHashCode();
@@ -122,23 +183,25 @@ class Sapper : ISapper
                     CheckEmptyCells(mousePTR[0], mousePTR[1], false);
                 }
             }
-            else if (Key(code) == "enter") 
+            else if (Key(code) == "enter")
             {
                 if (field[mousePTR[0], mousePTR[1]].IsFlag)
                 {
                     field[mousePTR[0], mousePTR[1]].ChangeFlag();
-                    flags--;                        
+                    flags--;
                 }
-                else if(flags + 1 != mines + 1)
+                else if (flags + 1 != mines + 1)
                 {
                     field[mousePTR[0], mousePTR[1]].ChangeFlag();
                     flags++;
-                }                           
+                }
             }
+            else if (Key(code) == "backspace") { Console.Clear();  Restart(true); }
 
             if (cellsToOpen - openCells == 0) win = true;
 
             Console.Clear();
+            CheckFlags();
         }        
     }
 
@@ -193,6 +256,7 @@ class Sapper : ISapper
         {
             field[y, x].Show = true;
             field[y, x].Checked = true;
+            if (field[y, x].IsFlag) flags--;
             field[y, x].IsFlag = false;
             openCells++;
 
