@@ -39,6 +39,7 @@ class Sapper : ISapper
 {
     Random rnd = new Random();
 
+    bool lose, win;
     int y, x, mines = 0, flags = 0, cellsToOpen, openCells = 0;
     int[] mousePTR;
     Dot[,] field; // i = y, j = x 
@@ -67,11 +68,13 @@ class Sapper : ISapper
 
     public void Start()
     {
-        bool lose = false;
-        bool win = false;
+        lose = false;
+        win = false;
 
         while(true)
         {
+            CheckFlags();
+
             if(win)
             {
                 Console.WriteLine("Вы выиграли!");
@@ -121,13 +124,40 @@ class Sapper : ISapper
             }
             else if (Key(code) == "enter") 
             {
-                
+                if (field[mousePTR[0], mousePTR[1]].IsFlag)
+                {
+                    field[mousePTR[0], mousePTR[1]].ChangeFlag();
+                    flags--;                        
+                }
+                else if(flags + 1 != mines + 1)
+                {
+                    field[mousePTR[0], mousePTR[1]].ChangeFlag();
+                    flags++;
+                }                           
             }
 
             if (cellsToOpen - openCells == 0) win = true;
 
             Console.Clear();
         }        
+    }
+
+    public void CheckFlags()
+    {
+        int correctFlags = 0;
+        for (int i = 0; i < field.GetLength(0); i++)
+        {
+            for (int j = 0; j < field.GetLength(1); j++)
+            {
+                if (field[i, j].IsFlag && field[i, j].Type == -1) correctFlags++;
+                if (field[i, j].IsFlag && field[i, j].Show)
+                {
+                    field[i, j].IsFlag = false;
+                    flags--;
+                }
+            }
+        }
+        if (correctFlags == mines) win = true;
     }
 
     public string Key(int code)
@@ -163,6 +193,7 @@ class Sapper : ISapper
         {
             field[y, x].Show = true;
             field[y, x].Checked = true;
+            field[y, x].IsFlag = false;
             openCells++;
 
             if (x + 1 < this.x)
@@ -298,7 +329,7 @@ class Sapper : ISapper
         {
             for (int j = 0; j < x; j++)
             {
-                if (field[mousePTR[0], mousePTR[1]].Type >= 0 && field[mousePTR[0], mousePTR[1]].IsFlag) { field[mousePTR[0], mousePTR[1]].IsFlag = false; }
+                //if (field[mousePTR[0], mousePTR[1]].Type >= 0 && field[mousePTR[0], mousePTR[1]].IsFlag) { field[mousePTR[0], mousePTR[1]].IsFlag = false; }
 
                 if (i == mousePTR[0] && j == mousePTR[1]) { Console.BackgroundColor = ConsoleColor.DarkGreen; }
 
