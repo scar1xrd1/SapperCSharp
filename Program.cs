@@ -89,10 +89,11 @@ class Sapper : ISapper
             {
                 Console.Write("Вы хотите начать заново?\n1. Да\n2. Нет\n-> ");
                 user = Console.ReadLine();
+                Console.Clear();
                 if (user == "1" || user == "2") { break; }
             }
         }
-        if(skipQuestion || user == "1")
+        if(skipQuestion || user == "1" && user != "2")
         {
             stopThreads = false;
             time = 0;
